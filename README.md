@@ -63,3 +63,18 @@ def heston_char_func(phi, S, K, T, r, kappa, theta, sigma, rho, v0):
     D = ((b - rho*sigma*i*phi + d)/sigma**2) * ((1 - np.exp(d*T)) / (1 - g*np.exp(d*T)))
     return np.exp(C + D*v0 + i*phi*np.log(S))
 ~~~
+characteristic function -> a complex function that completely determines the probability distribution of a random variable.
+
+Lastly, we compute a European call price using the Heston model by numerical integration of the characteristic function. This implements a more realistic model than Black-Scholes, accounting for stochastic volatility and correlation with asset returns.
+~~~ python
+def heston_call_price(S, K, T, r, kappa, theta, sigma, rho, v0):
+    def integrand(phi):
+        return np.real(np.exp(-1j*phi*np.log(K)) * heston_char_func(phi, S, K, T, r, kappa, theta, sigma, rho, v0) / (1j*phi))
+    integral = quad(integrand, 0, 100, limit=200)[0]
+    price = S - np.sqrt(S*K)*np.exp(-r*T)/np.pi * integral
+    return max(0, min(price, S))
+~~~
+
+The rest of the code are ways to visualize these primary functions and interact with them using sliders.
+
+# Issues while writing the code:
