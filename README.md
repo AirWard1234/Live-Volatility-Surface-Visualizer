@@ -1,5 +1,7 @@
 # Implied-Volatility-Surface-Visualizer
-Note, the project changed from live to implied, so the content of the repository will have some slight changes.
+**Note:** The Heston pricing functions are adapted from standard open-source implementations. 
+My contribution focused on creating the **interactive 3D implied volatility surface** and adding **slider controls** for dynamic exploration.
+
 
 The project is an implied volatility surface visulizer with interactive buttons and sliders that affects the kappa, theta, sigma, rho, v0 **(more details on these variables later)**
 
@@ -78,3 +80,14 @@ def heston_call_price(S, K, T, r, kappa, theta, sigma, rho, v0):
 The rest of the code are ways to visualize these primary functions and interact with them using sliders.
 
 # Issues while writing the code:
+The interactive implied volatility surface is computationally intensive because each update requires:
+- Pricing options using the Heston model (numerical integration of the characteristic function).
+- Computing the implied volatility via root-finding for each strike-maturity combination.
+
+As a result, live slider updates (continuous dragging) can be slow or unresponsive in Matplotlib.
+
+Mitigation:
+- The “Update Surface” button triggers recalculation only once after adjusting sliders, keeping the interface responsive.
+- Grid size and numerical integration parameters are chosen to balance performance and visual fidelity.
+
+Future improvements could include caching or vectorized computation to enable near-real-time slider updates.
