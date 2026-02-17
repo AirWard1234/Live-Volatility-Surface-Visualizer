@@ -36,3 +36,30 @@ This function takes in the paramaters:
 
 This function just calculates a theoretical European option call price.
 
+Next, we calculated the implied volatility. 
+~~~ python
+def implied_vol(price, S, K, T, r):
+    def f(sigma):
+        return black_scholes_call(S, K, T, r, sigma) - price
+    try:
+        if f(1e-6) * f(5.0) > 0:
+            return np.nan
+        return brentq(f, 1e-6, 5.0)
+    except ValueError:
+        return np.nan
+~~~
+This uses the previous black-scholes function and checks if f(1e-6) and f(5.0) have opposite signs (a requirement for Brent’s method).
+
+Then we compute the characteristic function of the Heston model for Fourier-based option pricing. This allows pricing options under stochastic volatility and reproduces real-world smile/skew effects.
+~~~ python
+def heston_char_func(phi, S, K, T, r, kappa, theta, sigma, rho, v0):
+    i = 1j
+    a = kappa * theta
+    u = -0.5
+    b = kappa - rho * sigma
+    d = np.sqrt((rho*sigma*i*phi - b)**2 - sigma**2 * (2*u*i*phi - phi**2))
+    g = (b - rho*sigma*i*phi + d) / (b - rho*sigma*i*phi - d)
+    C = r*i*phi*T + (a/sigma**2)*((b - rho*sigma*i*phi + d)*T - 2*np.log((1-g*np.exp(d*T))/(1-g)))
+    D = ((b - rho*sigma*i*phi + d)/sigma**2) * ((1 - np.exp(d*T)) / (1 - g*np.exp(d*T)))
+    return np.exp(C + D*v0 + i*phi*np.log(S))
+~~~
